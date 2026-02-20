@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My PDF Editor & Signer Portal</title>
+</head>
+<body>
+    <h1>Edit, Sign, and Send PDF</h1>
+    <form id="pdfForm">
+        <label for="pdf">Upload PDF:</label>
+        <input type="file" id="pdf" name="pdf" accept=".pdf" required><br><br>
+        
+        <label for="edits">Edits (JSON format, e.g., {"field1": "New Value", "textToReplace": "New Text"}):</label>
+        <textarea id="edits" name="edits" rows="4" cols="50"></textarea><br><br>
+        
+        <label for="signature">Signature (Text or Image URL):</label>
+        <input type="text" id="signature" name="signature" placeholder="e.g., John Doe or https://example.com/sig.png"><br><br>
+        
+        <label for="sig_position">Signature Position (Page, X, Y, e.g., "1,100,200"):</label>
+        <input type="text" id="sig_position" name="sig_position"><br><br>
+        
+        <label for="email">Recipient Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+        
+        <button type="submit">Process and Send</button>
+    </form>
+    
+    <script>
+        const form = document.getElementById('pdfForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('YOUR_N8N_WEBHOOK_URL', { // Replace with webhook from step 4
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    alert('PDF processed and sent!');
+                } else {
+                    alert('Error: ' + await response.text());
+                }
+            } catch (error) {
+                alert('Failed: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
