@@ -2,49 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My PDF Editor & Signer</title>
+    <title>My PDF Editor & Signer Portal</title>
     <style>
-        body { font-family: Arial; max-width: 600px; margin: 20px auto; }
-        label { display: block; margin: 10px 0 5px; }
-        button { padding: 10px; background: #007bff; color: white; border: none; }
-        button:disabled { background: #ccc; }
+        body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; }
+        label { display: block; margin: 15px 0 5px; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:disabled { background: #aaa; cursor: not-allowed; }
     </style>
 </head>
 <body>
-    <h1>Edit & Sign PDF</h1>
+    <h1>Edit, Sign, and Send PDF</h1>
+
     <form id="pdfForm">
         <label for="pdf">Upload PDF:</label>
         <input type="file" id="pdf" name="pdf" accept=".pdf" required>
 
-        <label for="edits">Edits (JSON, e.g. {"OldText": "NewText"}):</label>
-        <textarea id="edits" name="edits" rows="4" cols="50" placeholder='{"Name": "John", "Date": "2023-10-01"}' required></textarea>
+        <label for="edits">Edits (valid JSON, e.g. {"Name": "John", "Date": "2025-02-20"}):</label>
+        <textarea id="edits" name="edits" rows="4" cols="50" placeholder='{"Name": "John Doe", "Date": "2025-02-20"}' required></textarea>
 
-        <label for="signature_type">Signature Type:</label>
-        <select id="signature_type" name="signature_type">
-            <option value="text">Text</option>
-            <option value="image">Upload Image</option>
-        </select>
+        <label for="signature">Signature (Text or Image URL):</label>
+        <input type="text" id="signature" name="signature" placeholder="John Doe or https://example.com/sig.png" required>
 
-        <div id="text_sig" style="display: block;">
-            <label for="signature_text">Signature Text:</label>
-            <input type="text" id="signature_text" name="signature_text" placeholder="e.g., John Doe">
-        </div>
+        <label for="sig_position">Signature Position (Page,X,Y e.g. "1,150,650"):</label>
+        <input type="text" id="sig_position" name="sig_position" placeholder="1,150,650" required>
 
-        <div id="image_sig" style="display: none;">
-            <label for="signature_image">Upload Signature Image (PNG/JPG):</label>
-            <input type="file" id="signature_image" name="signature_image" accept="image/*">
-        </div>
-
-        <label for="sig_position">Signature Position:</label>
-        <select id="sig_position" name="sig_position" required>
-            <option value="">Choose...</option>
-            <option value="bottom_left">Bottom Left</option>
-            <option value="bottom_center">Bottom Center</option>
-            <option value="bottom_right">Bottom Right</option>
-            <option value="top_right">Top Right</option>
-        </select>
-
-        <label for="email">Email (optional):</label>
+        <label for="email">Recipient Email (optional – PDF will download anyway):</label>
         <input type="email" id="email" name="email">
 
         <button type="submit" id="submitBtn">Process PDF</button>
@@ -53,37 +35,37 @@
     <script>
         const form = document.getElementById('pdfForm');
         const submitBtn = document.getElementById('submitBtn');
-        const sigType = document.getElementById('signature_type');
-        const textSig = document.getElementById('text_sig');
-        const imageSig = document.getElementById('image_sig');
-
-        sigType.addEventListener('change', () => {
-            textSig.style.display = sigType.value === 'text' ? 'block' : 'none';
-            imageSig.style.display = sigType.value === 'image' ? 'block' : 'none';
-        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             submitBtn.disabled = true;
             submitBtn.textContent = 'Processing...';
+
             const formData = new FormData(form);
+
             try {
-                const response = await fetch('https://niumih.app.n8n.cloud/webhook/pdf-editor', { // URL
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch(
+                    'https://niumih.app.n8n.cloud/webhook/637bc509-d0e3-4d7d-b6c5-220fffdb88ca',   // ← REPLACE THIS WITH YOUR REAL N8N WEBHOOK URL
+                    {
+                        method: 'POST',
+                        body: formData
+                    }
+                );
+
                 if (response.ok) {
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = 'edited_signed.pdf';
+                    document.body.appendChild(a);
                     a.click();
                     a.remove();
                     window.URL.revokeObjectURL(url);
-                    alert('PDF ready! Download started.');
+                    alert('PDF processed! Download started.');
                 } else {
-                    alert('Error: ' + await response.text());
+                    const errorText = await response.text();
+                    alert('Server error: ' + errorText);
                 }
             } catch (error) {
                 alert('Connection failed: ' + error.message);
